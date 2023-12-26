@@ -190,13 +190,13 @@ function buildTypes() {
     var moduleNameRegex = /^(mode|theme|ext|keybinding)-|^snippets\//;
 
     var pathModules = [
-        "declare module 'ace-builds/webpack-resolver';",
-        "declare module 'ace-builds/esm-resolver';",
-        "declare module 'ace-builds/src-noconflict/ace';"
+        "declare module '@firstcall-qa/ace-builds/webpack-resolver';",
+        "declare module '@firstcall-qa/ace-builds/esm-resolver';",
+        "declare module '@firstcall-qa/ace-builds/src-noconflict/ace';"
     ].concat(paths.map(function(path) {
         if (moduleNameRegex.test(path)) {
             var moduleName = path.split('.')[0];
-            return "declare module 'ace-builds/src-noconflict/" + moduleName + "';";
+            return "declare module '@firstcall-qa/ace-builds/src-noconflict/" + moduleName + "';";
         }
     }).filter(Boolean)).join("\n") + "\n";
 

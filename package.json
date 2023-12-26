@@ -1,6 +1,6 @@
 {
-    "name": "ace-code",
-    "description": "Ajax.org Code Editor is a full featured source code highlighting editor that powers the Cloud9 IDE",
+    "name": "@firstcall-qa/ace",
+    "description": "FirstCall QA fork of Ajax.org Code Editor (ACE)",
     "version": "1.32.2",
     "homepage": "http://github.com/ajaxorg/ace",
     "engines": {

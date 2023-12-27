@@ -1002,6 +1002,7 @@ export namespace Ace {
     destroy(): void;
     setAutoScrollEditorIntoView(enable: boolean): void;
     completers: Completer[];
+    completer?: Ace.Autocomplete | InlineAutocomplete,
   }
 
   type CompleterCallback = (error: any, completions: Completion[]) => void;
@@ -1020,6 +1021,7 @@ export namespace Ace {
     id?: string;
     triggerCharacters?: string[];
     hideInlinePreview?: boolean;
+    getCompletionPrefix?(editor: Ace.Editor): string | undefined;
   }
 
   export class AceInline {
@@ -1079,6 +1081,8 @@ export namespace Ace {
     showPopup(editor: Editor, options: CompletionOptions): void;
     detach(): void;
     destroy(): void;
+    completionProvider: CompletionProvider;
+    activated: boolean;
   }
 
   type AcePopupNavigation = "up" | "down" | "start" | "end";

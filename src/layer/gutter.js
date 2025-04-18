@@ -324,6 +324,7 @@ class Gutter{
         var textNode = element.childNodes[0];
         var foldWidget = element.childNodes[1];
         var annotationNode = element.childNodes[2];
+        var customWidget = element.childNodes[3];
         var annotationIconNode = annotationNode.firstChild;
 
         var firstLineNumber = session.$firstLineNumber;
@@ -434,6 +435,14 @@ class Gutter{
             }
         }
 
+        const customWidgetAttributes = this.session.$gutterCustomWidgets[row];
+        if (customWidgetAttributes) {
+            this.$addCustomWidget(row, customWidgetAttributes,cell);
+        }
+        else if (customWidget){
+            this.$removeCustomWidget(row,cell);
+        }
+
         if (annotationInFold && this.$showFoldedAnnotations){
             annotationNode.className = "ace_gutter_annotation";
             annotationIconNode.className = iconClassName;
@@ -487,6 +496,118 @@ class Gutter{
         
         return cell;
     }
+
+    /**
+      * Hides the fold widget/icon from a specific row in the gutter
+      * @param {number} row The row number from which to hide the fold icon
+      * @param {any} cell - Gutter cell 
+      * @experimental
+      */
+     $hideFoldWidget(row, cell) {
+         const rowCell = cell || this.$getGutterCell(row);
+         if (rowCell && rowCell.element) {
+             const foldWidget = rowCell.element.childNodes[1];
+             if (foldWidget) {
+                 dom.setStyle(foldWidget.style, "display", "none");
+             }
+         }
+     }
+ 
+     /**
+      * Shows the fold widget/icon from a specific row in the gutter
+      * @param {number} row The row number from which to show the fold icon
+      * @param {any} cell - Gutter cell 
+      * @experimental
+      */
+     $showFoldWidget(row,cell) {
+         const rowCell = cell || this.$getGutterCell(row);
+         if (rowCell && rowCell.element) {
+             const foldWidget = rowCell.element.childNodes[1];
+             if (foldWidget && this.session.foldWidgets[rowCell.row]) {
+                 dom.setStyle(foldWidget.style, "display", "inline-block");
+             }
+         }
+     }
+ 
+     /**
+     * Retrieves the gutter cell element at the specified cursor row position.
+     * @param {number} row - The row number in the editor where the gutter cell is located starts from 0
+     * @returns {HTMLElement|null} The gutter cell element at the specified row, or null if not found
+     * @experimental
+     */
+     $getGutterCell(row) {
+         // contains only visible rows
+         const cells = this.$lines.cells;
+         const visibileRow= this.session.documentToScreenRow(row,0);
+         // subtracting the first visible screen row index and folded rows from the row number.
+         return cells[row - this.config.firstRowScreen - (row-visibileRow)];
+     }
+ 
+     /**
+     * Displays a custom widget for a specific row
+     * @param {number} row - The row number where the widget will be displayed
+     * @param {Object} attributes - Configuration attributes for the widget
+     * @param {string} attributes.className - CSS class name for styling the widget
+     * @param {string} attributes.label - Text label to display in the widget
+     * @param {string} attributes.title - Tooltip text for the widget
+     * @param {Object} attributes.callbacks - Event callback functions for the widget e.g onClick; 
+     * @param {any} cell - Gutter cell 
+     * @returns {void}
+     * @experimental
+     */
+     $addCustomWidget(row, {className, label, title, callbacks}, cell) {
+         this.session.$gutterCustomWidgets[row] = {className, label, title, callbacks};
+         this.$hideFoldWidget(row,cell);
+ 
+         // cell is required because when cached cell is used to render, $lines won't have that cell
+         const rowCell = cell || this.$getGutterCell(row);
+         if (rowCell && rowCell.element) {
+             let customWidget = rowCell.element.querySelector(".ace_custom-widget");
+             // deleting the old custom widget to remove the old click event listener
+             if (customWidget) {
+                 customWidget.remove();
+             }
+ 
+             customWidget = dom.createElement("span");
+             customWidget.className = `ace_custom-widget ${className}`;
+             customWidget.setAttribute("tabindex", "-1");
+             customWidget.setAttribute("role", 'button');
+             customWidget.setAttribute("aria-label", label);
+             customWidget.setAttribute("title", title);
+             dom.setStyle(customWidget.style, "display", "inline-block");
+             dom.setStyle(customWidget.style, "height", "inherit");
+             
+             if (callbacks&& callbacks.onClick) {
+                 customWidget.addEventListener("click", (e) => {
+                     callbacks.onClick(e, row);
+                     e.stopPropagation();
+                 });
+             }
+ 
+             rowCell.element.appendChild(customWidget);
+         }
+     }
+     
+     /**
+     * Remove a custom widget for a specific row
+     * @param {number} row - The row number where the widget will be removed
+     * @param {any} cell - Gutter cell 
+     * @returns {void}
+     * @experimental
+     */
+     $removeCustomWidget(row, cell) {
+         delete this.session.$gutterCustomWidgets[row];
+         this.$showFoldWidget(row,cell);
+ 
+         // cell is required because when cached cell is used to render, $lines won't have that cell
+         const rowCell = cell || this.$getGutterCell(row);
+         if (rowCell && rowCell.element) {
+             const customWidget = rowCell.element.querySelector(".ace_custom-widget");
+             if (customWidget) {
+                 rowCell.element.removeChild(customWidget);
+             }
+         }
+     }
 
     /**
      * @param {boolean} highlightGutterLine

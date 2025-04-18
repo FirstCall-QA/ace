@@ -546,6 +546,13 @@ export namespace Ace {
     getOverwrite(): boolean;
     toggleOverwrite(): void;
     addGutterDecoration(row: number, className: string): void;
+    removeGutterCustomWidget(row: number): void;
+    addGutterCustomWidget(row: number, attributes: {
+        className: string;
+        label: string;
+        title: string;
+        callbacks: any;
+    }): void;
     removeGutterDecoration(row: number, className: string): void;
     getBreakpoints(): string[];
     setBreakpoints(rows: number[]): void;

@@ -548,10 +548,7 @@ export namespace Ace {
     addGutterDecoration(row: number, className: string): void;
     removeGutterCustomWidget(row: number): void;
     addGutterCustomWidget(row: number, attributes: {
-        className: string;
-        label: string;
-        title: string;
-        callbacks: any;
+        factory: (row: number) => Element | undefined
     }): void;
     removeGutterDecoration(row: number, className: string): void;
     getBreakpoints(): string[];

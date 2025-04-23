@@ -442,6 +442,11 @@ export namespace Ace {
          */
         "changeBreakpoint": (e: { row: number, breakpoint: boolean }) => void;
         /**
+         * Emitted when the gutter changes by setting or removing custom widgets
+         * @param e
+         */
+        "changeGutterCustomWidget": (e: { row: number }) => void;
+        /**
          * Emitted when a front marker changes.
          * @param e
          */

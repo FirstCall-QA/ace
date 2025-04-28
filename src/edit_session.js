@@ -55,7 +55,6 @@ class EditSession {
 
         // @experimental
         this.$gutterCustomWidgets = {};
-        this.$gutterCustomWidgetsFactoryCache = {};
 
         // Set default background tokenizer with Text mode until editor session mode is set
         this.bgTokenizer = new BackgroundTokenizer((new TextMode()).getTokenizer(), this);
@@ -470,7 +469,6 @@ class EditSession {
       */
     removeGutterCustomWidget(row) {
         delete this.$gutterCustomWidgets[row];
-        delete this.$gutterCustomWidgetsFactoryCache[row];
         this._signal("changeGutterCustomWidget", {});
     }
 

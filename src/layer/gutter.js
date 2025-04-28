@@ -537,18 +537,14 @@ class Gutter{
         this.$hideFoldWidget(cell);
 
         if (cell && cell.element) {
-            const cachedFactory = this.session.$gutterCustomWidgetsFactoryCache[row];
-            if (cell.element.childNodes[3] != null && factory === cachedFactory) {
-                return;
-            }
-
-            this.session.$gutterCustomWidgetsFactoryCache[row] = factory;
             const customWidget = factory(row);
             if (customWidget) {
-                if (cell.element.childNodes[3]) {
-                    cell.element.childNodes[3].remove();
+                const existingNode = cell.element.childNodes[3];
+                if (existingNode) {
+                    existingNode.replaceWith(customWidget);
+                } else {
+                    cell.element.appendChild(customWidget);
                 }
-                cell.element.appendChild(customWidget);
             } else {
                 this.$hideCustomWidget(cell);
             }

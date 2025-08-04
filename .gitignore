@@ -27,3 +27,6 @@ dist
 
 lib/ace
 /types/index.d.ts
+/styles
+/esm-resolver.d.ts
+/esm-resolver.js

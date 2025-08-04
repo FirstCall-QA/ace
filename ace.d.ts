@@ -1,8 +1,6 @@
 /// <reference path="./ace-modes.d.ts" />
 /// <reference path="./ace-extensions.d.ts" />
 
-import {Fold} from "./ace-internal";
-
 export namespace Ace {
   export type NewLineMode = 'auto' | 'unix' | 'windows';
 

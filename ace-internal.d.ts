@@ -664,6 +664,7 @@ export namespace Ace {
         lines: string[];
         id?: number,
         folds?: Fold[]
+        docLinesBefore?: string[];
     }
 
     interface Annotation {

@@ -13,7 +13,7 @@ var Range = require("./range").Range;
 var Anchor = require("./anchor").Anchor;
 
 /**
- * Contains the text of the document. Document can be attached to several [[EditSession `EditSession`]]s. 
+ * Contains the text of the document. Document can be attached to several [[EditSession `EditSession`]]s.
  * At its core, `Document`s are just an array of strings, with each row in the document matching up to the array index.
  **/
 class Document {
@@ -36,7 +36,7 @@ class Document {
             this.insert({row: 0, column:0}, textOrLines);
         }
     }
-    
+
     /**
      * Replaces all the lines in the current `Document` with the value of `text`.
      *
@@ -56,7 +56,7 @@ class Document {
         return this.getAllLines().join(this.getNewLineCharacter());
     }
 
-    /** 
+    /**
      * Creates a new `Anchor` to define a floating point in the document.
      * @param {Number} row The row number to use
      * @param {Number} column The column number to use
@@ -76,9 +76,9 @@ class Document {
     }
 
     /**
-     * Returns the newline character that's being used, depending on the value of `newLineMode`. 
-     * @returns {String} If `newLineMode == windows`, `\r\n` is returned.  
-     *  If `newLineMode == unix`, `\n` is returned.  
+     * Returns the newline character that's being used, depending on the value of `newLineMode`.
+     * @returns {String} If `newLineMode == windows`, `\r\n` is returned.
+     *  If `newLineMode == unix`, `\n` is returned.
      *  If `newLineMode == auto`, the value of `autoNewLine` is returned.
      *
      **/
@@ -96,7 +96,7 @@ class Document {
     /**
      * [Sets the new line mode.]{: #Document.setNewLineMode.desc}
      * @param {NewLineMode} newLineMode [The newline mode to use; can be either `windows`, `unix`, or `auto`]{: #Document.setNewLineMode.param}
-     
+
      **/
     setNewLineMode(newLineMode) {
         if (this.$newLineMode === newLineMode)
@@ -161,17 +161,17 @@ class Document {
     /**
      * Returns all the text within `range` as a single string.
      * @param {IRange} range The range to work with.
-     * 
+     *
      * @returns {String}
      **/
     getTextRange(range) {
         return this.getLinesForRange(range).join(this.getNewLineCharacter());
     }
-    
+
     /**
      * Returns all the text within `range` as an array of lines.
      * @param {IRange} range The range to work with.
-     * 
+     *
      * @returns {string[]}
      **/
     getLinesForRange(range) {
@@ -194,7 +194,7 @@ class Document {
     /**
      * @param row
      * @param lines
-     
+
      * @deprecated
      */
     insertLines(row, lines) {
@@ -206,7 +206,7 @@ class Document {
      * @param firstRow
      * @param lastRow
      * @returns {String[]}
-     
+
      * @deprecated
      */
     removeLines(firstRow, lastRow) {
@@ -217,7 +217,7 @@ class Document {
     /**
      * @param position
      * @returns {Point}
-     
+
      * @deprecated
      */
     insertNewLine(position) {
@@ -229,24 +229,24 @@ class Document {
      * Inserts a block of `text` at the indicated `position`.
      * @param {Point} position The position to start inserting at; it's an object that looks like `{ row: row, column: column}`
      * @param {String} text A chunk of text to insert
-     * @returns {Point} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`. 
-     
+     * @returns {Point} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
+
      **/
     insert(position, text) {
         // Only detect new lines if the document has no line break yet.
         if (this.getLength() <= 1)
             this.$detectNewLine(text);
-        
+
         return this.insertMergedLines(position, this.$split(text));
     }
-    
+
     /**
      * Inserts `text` into the `position` at the current row. This method also triggers the `"change"` event.
-     * 
+     *
      * This differs from the `insert` method in two ways:
      *   1. This does NOT handle newline characters (single-line text only).
      *   2. This is faster than the `insert` method for single-line text insertions.
-     * 
+     *
      * @param {Point} position The position to insert at; it's an object that looks like `{ row: row, column: column}`
      * @param {String} text A chunk of text without new lines
      * @returns {Point} Returns the position of the end of the inserted text
@@ -254,19 +254,19 @@ class Document {
     insertInLine(position, text) {
         var start = this.clippedPos(position.row, position.column);
         var end = this.pos(position.row, position.column + text.length);
-        
+
         this.applyDelta({
             start: start,
             end: end,
             action: "insert",
             lines: [text]
         }, true);
-        
+
         return this.clonePos(end);
     }
 
     /**
-     * 
+     *
      * @param {number} row
      * @param {number} column
      * @return {Point}
@@ -321,18 +321,18 @@ class Document {
         }
         return position;
     }
-    
+
     /**
      * Inserts the elements in `lines` into the document as full lines (does not merge with existing line), starting at the row index given by `row`. This method also triggers the `"change"` event.
      * @param {Number} row The index of the row to insert at
      * @param {string[]} lines An array of strings
-     
+
      **/
     insertFullLines(row, lines) {
         // Clip to document.
         // Allow one past the document end.
         row = Math.min(Math.max(row, 0), this.getLength());
-        
+
         // Calculate insertion point.
         var column = 0;
         if (row < this.getLength()) {
@@ -345,7 +345,7 @@ class Document {
             row--;
             column = this.$lines[row].length;
         }
-        
+
         // Insert.
         this.insertMergedLines({row: row, column: column}, lines);
     }
@@ -354,29 +354,29 @@ class Document {
      * Inserts the elements in `lines` into the document, starting at the position index given by `row`. This method also triggers the `"change"` event.
      * @param {Point} position
      * @param {string[]} lines An array of strings
-     * @returns {Point} Contains the final row and column, like this:  
+     * @returns {Point} Contains the final row and column, like this:
      *   ```
      *   {row: endRow, column: 0}
-     *   ```  
-     *   If `lines` is empty, this function returns an object containing the current row, and column, like this:  
-     *   ``` 
+     *   ```
+     *   If `lines` is empty, this function returns an object containing the current row, and column, like this:
+     *   ```
      *   {row: row, column: 0}
      *   ```
-     **/    
+     **/
     insertMergedLines(position, lines) {
         var start = this.clippedPos(position.row, position.column);
         var end = {
             row: start.row + lines.length - 1,
             column: (lines.length == 1 ? start.column : 0) + lines[lines.length - 1].length
         };
-        
+
         this.applyDelta({
             start: start,
             end: end,
             action: "insert",
             lines: lines
         });
-        
+
         return this.clonePos(end);
     }
 
@@ -384,7 +384,7 @@ class Document {
      * Removes the `range` from the document.
      * @param {IRange} range A specified Range to remove
      * @returns {Point} Returns the new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
-     
+
      **/
     remove(range) {
         var start = this.clippedPos(range.start.row, range.start.column);
@@ -401,22 +401,22 @@ class Document {
     /**
      * Removes the specified columns from the `row`. This method also triggers a `"change"` event.
      * @param {Number} row The row to remove from
-     * @param {Number} startColumn The column to start removing at 
+     * @param {Number} startColumn The column to start removing at
      * @param {Number} endColumn The column to stop removing at
      * @returns {Point} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
-     
+
      **/
     removeInLine(row, startColumn, endColumn) {
         var start = this.clippedPos(row, startColumn);
         var end = this.clippedPos(row, endColumn);
-        
+
         this.applyDelta({
             start: start,
             end: end,
             action: "remove",
             lines: this.getLinesForRange({start: start, end: end})
         }, true);
-        
+
         return this.clonePos(start);
     }
 
@@ -425,13 +425,13 @@ class Document {
      * @param {Number} firstRow The first row to be removed
      * @param {Number} lastRow The last row to be removed
      * @returns {String[]} Returns all the removed lines.
-     
+
      **/
     removeFullLines(firstRow, lastRow) {
         // Clip to document.
         firstRow = Math.min(Math.max(0, firstRow), this.getLength() - 1);
         lastRow  = Math.min(Math.max(0, lastRow ), this.getLength() - 1);
-        
+
         // Calculate deletion range.
         // Delete the ending new line unless we're at the end of the document.
         // If we're at the end of the document, delete the starting new line.
@@ -440,19 +440,19 @@ class Document {
         var startRow = ( deleteFirstNewLine ? firstRow - 1                  : firstRow                    );
         var startCol = ( deleteFirstNewLine ? this.getLine(startRow).length : 0                           );
         var endRow   = ( deleteLastNewLine  ? lastRow + 1                   : lastRow                     );
-        var endCol   = ( deleteLastNewLine  ? 0                             : this.getLine(endRow).length ); 
+        var endCol   = ( deleteLastNewLine  ? 0                             : this.getLine(endRow).length );
         var range = new Range(startRow, startCol, endRow, endCol);
-        
+
         // Store delelted lines with bounding newlines ommitted (maintains previous behavior).
         var deletedLines = this.$lines.slice(firstRow, lastRow + 1);
-        
+
         this.applyDelta({
             start: range.start,
             end: range.end,
             action: "remove",
             lines: this.getLinesForRange(range)
         });
-        
+
         // Return the deleted lines.
         return deletedLines;
     }
@@ -503,7 +503,7 @@ class Document {
         else {
             end = range.start;
         }
-        
+
         return end;
     }
 
@@ -516,7 +516,7 @@ class Document {
             this.applyDelta(deltas[i]);
         }
     }
-    
+
     /**
      * Reverts all changes in `deltas` from the document.
      * @param {Delta[]} deltas An array of delta objects (can include "insert" and "remove" actions)
@@ -526,7 +526,7 @@ class Document {
             this.revertDelta(deltas[i]);
         }
     }
-    
+
     /**
      * Applies `delta` to the document.
      * @param {Delta} delta A delta object (can include "insert" and "remove" actions)
@@ -539,13 +539,16 @@ class Document {
             : !Range.comparePoints(delta.start, delta.end)) {
             return;
         }
-        
+
         if (isInsert && delta.lines.length > 20000) {
             this.$splitAndapplyLargeDelta(delta, 20000);
         }
         else {
+            const docLinesBefore = [...this.$lines];
             applyDelta(this.$lines, delta, doNotValidate);
+            delta.docLinesBefore = docLinesBefore;
             this._signal("change", delta);
+            delete delta.docLinesBefore;
         }
     }
 
@@ -554,7 +557,7 @@ class Document {
      */
     $safeApplyDelta(delta) {
         var docLength = this.$lines.length;
-        // verify that delta is in the document to prevent applyDelta from corrupting lines array 
+        // verify that delta is in the document to prevent applyDelta from corrupting lines array
         if (
             delta.action == "remove" && delta.start.row < docLength && delta.end.row < docLength
             || delta.action == "insert" && delta.start.row <= docLength
@@ -564,7 +567,7 @@ class Document {
     }
 
     /**
-     * 
+     *
      * @param {Delta} delta
      * @param {number} MAX
      */
@@ -573,14 +576,14 @@ class Document {
         //    1. We need to support splicing delta lines into the document via $lines.splice.apply(...)
         //    2. fn.apply() doesn't work for a large number of params. The smallest threshold is on chrome 40 ~42000.
         // we use 20000 to leave some space for actual stack
-        // 
+        //
         // To Do: Ideally we'd be consistent and also split 'delete' deltas. We don't do this now, because delete
         //        delta handling is too slow. If we make delete delta handling faster we can split all large deltas
         //        as shown in https://gist.github.com/aldendaniels/8367109#file-document-snippet-js
         //        If we do this, update validateDelta() to limit the number of lines in a delete delta.
         var lines = delta.lines;
         var l = lines.length - MAX + 1;
-        var row = delta.start.row; 
+        var row = delta.start.row;
         var column = delta.start.column;
         for (var from = 0, to = 0; from < l; from = to) {
             to += MAX - 1;
@@ -599,7 +602,7 @@ class Document {
         delta.start.column = column;
         this.applyDelta(delta, true);
     }
-    
+
     /**
      * Reverts `delta` from the document.
      * @param {Delta} delta A delta object (can include "insert" and "remove" actions)
@@ -612,7 +615,7 @@ class Document {
             lines: delta.lines.slice()
         });
     }
-    
+
     /**
      * Converts an index position in a document to a `{row, column}` object.
      *
@@ -622,7 +625,7 @@ class Document {
      * var x = 0; // 10 characters, plus one for newline
      * var y = -1;
      * ```
-     * 
+     *
      * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
      *
      * @param {Number} index An index to convert
@@ -649,7 +652,7 @@ class Document {
      * var x = 0; // 10 characters, plus one for newline
      * var y = -1;
      * ```
-     * 
+     *
      * Here, `y` is an index 15: 11 characters for the first row, and 5 characters until `y` in the second.
      *
      * @param {Point} pos The `{row, column}` to convert

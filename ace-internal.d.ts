@@ -665,6 +665,8 @@ export namespace Ace {
         id?: number,
         folds?: Fold[]
         docLinesBefore?: string[];
+        docLinesAfter?: string[];
+        undoOfDelta?: Delta;
     }
 
     interface Annotation {

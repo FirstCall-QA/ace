@@ -546,9 +546,15 @@ class Document {
         else {
             const docLinesBefore = [...this.$lines];
             applyDelta(this.$lines, delta, doNotValidate);
+            const docLinesAfter = [...this.$lines];
+
             delta.docLinesBefore = docLinesBefore;
+            delta.docLinesAfter = docLinesAfter;
             this._signal("change", delta);
+
+            // Delete doc lines to make sure no excessive memory consumption
             delete delta.docLinesBefore;
+            delete delta.docLinesAfter;
         }
     }
 
@@ -612,7 +618,8 @@ class Document {
             start: this.clonePos(delta.start),
             end: this.clonePos(delta.end),
             action: (delta.action == "insert" ? "remove" : "insert"),
-            lines: delta.lines.slice()
+            lines: delta.lines.slice(),
+            undoOfDelta: delta
         });
     }
 

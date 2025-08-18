@@ -798,6 +798,23 @@ class Editor {
         return this.session.getTextRange(this.getSelectionRange());
     }
 
+    getCopyTextExtended () {
+        var mode = this.session.getMode();
+        var copyResult;
+        if (mode.onGetCopyTextExtended) {
+            copyResult = mode.onGetCopyTextExtended(this);
+        }
+
+        if (!copyResult) {
+            return;
+        }
+
+        var e = { text: copyResult.plainText };
+        this._signal("copy", e);
+        clipboard.lineMode = copyResult.copyLineMode ? e.text : false;
+
+        return copyResult;
+    }
 
     /**
      * Returns the string of text currently highlighted.

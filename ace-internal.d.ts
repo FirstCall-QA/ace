@@ -883,6 +883,18 @@ export namespace Ace {
 
         $delegator(method: string, args: IArguments, defaultHandler): any;
 
+        onGetCopyTextExtended?: (editor: Editor) => OnGetCopyTextExtendedResult | undefined;
+    }
+
+    interface OnGetCopyTextExtendedResult {
+        plainText: string;
+        copyLineMode?: boolean;
+        extendedFormats?: ClipboardFormatData[];
+    }
+
+    interface ClipboardFormatData {
+        format: string;
+        data: string;
     }
 
     interface OptionsBase {

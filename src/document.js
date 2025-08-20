@@ -232,12 +232,12 @@ class Document {
      * @returns {Point} The position ({row, column}) of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
 
      **/
-    insert(position, text) {
+    insert(position, text, reason) {
         // Only detect new lines if the document has no line break yet.
         if (this.getLength() <= 1)
             this.$detectNewLine(text);
 
-        return this.insertMergedLines(position, this.$split(text));
+        return this.insertMergedLines(position, this.$split(text), reason);
     }
 
     /**
@@ -251,7 +251,7 @@ class Document {
      * @param {String} text A chunk of text without new lines
      * @returns {Point} Returns the position of the end of the inserted text
      **/
-    insertInLine(position, text) {
+    insertInLine(position, text, reason) {
         var start = this.clippedPos(position.row, position.column);
         var end = this.pos(position.row, position.column + text.length);
 
@@ -259,7 +259,8 @@ class Document {
             start: start,
             end: end,
             action: "insert",
-            lines: [text]
+            lines: [text],
+            reason
         }, true);
 
         return this.clonePos(end);
@@ -363,7 +364,7 @@ class Document {
      *   {row: row, column: 0}
      *   ```
      **/
-    insertMergedLines(position, lines) {
+    insertMergedLines(position, lines, reason) {
         var start = this.clippedPos(position.row, position.column);
         var end = {
             row: start.row + lines.length - 1,
@@ -374,7 +375,8 @@ class Document {
             start: start,
             end: end,
             action: "insert",
-            lines: lines
+            lines: lines,
+            reason
         });
 
         return this.clonePos(end);
@@ -386,14 +388,15 @@ class Document {
      * @returns {Point} Returns the new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
 
      **/
-    remove(range) {
+    remove(range, reason) {
         var start = this.clippedPos(range.start.row, range.start.column);
         var end = this.clippedPos(range.end.row, range.end.column);
         this.applyDelta({
             start: start,
             end: end,
             action: "remove",
-            lines: this.getLinesForRange({start: start, end: end})
+            lines: this.getLinesForRange({start: start, end: end}),
+            reason
         });
         return this.clonePos(start);
     }
@@ -406,7 +409,7 @@ class Document {
      * @returns {Point} Returns an object containing `startRow` and `startColumn`, indicating the new row and column values.<br/>If `startColumn` is equal to `endColumn`, this function returns nothing.
 
      **/
-    removeInLine(row, startColumn, endColumn) {
+    removeInLine(row, startColumn, endColumn, reason) {
         var start = this.clippedPos(row, startColumn);
         var end = this.clippedPos(row, endColumn);
 
@@ -414,7 +417,8 @@ class Document {
             start: start,
             end: end,
             action: "remove",
-            lines: this.getLinesForRange({start: start, end: end})
+            lines: this.getLinesForRange({start: start, end: end}),
+            reason
         }, true);
 
         return this.clonePos(start);
@@ -427,7 +431,7 @@ class Document {
      * @returns {String[]} Returns all the removed lines.
 
      **/
-    removeFullLines(firstRow, lastRow) {
+    removeFullLines(firstRow, lastRow, reason) {
         // Clip to document.
         firstRow = Math.min(Math.max(0, firstRow), this.getLength() - 1);
         lastRow  = Math.min(Math.max(0, lastRow ), this.getLength() - 1);
@@ -450,7 +454,8 @@ class Document {
             start: range.start,
             end: range.end,
             action: "remove",
-            lines: this.getLinesForRange(range)
+            lines: this.getLinesForRange(range),
+            reason
         });
 
         // Return the deleted lines.
@@ -462,13 +467,14 @@ class Document {
      * @param {Number} row The row to check
      *
      **/
-    removeNewLine(row) {
+    removeNewLine(row, reason) {
         if (row < this.getLength() - 1 && row >= 0) {
             this.applyDelta({
                 start: this.pos(row, this.getLine(row).length),
                 end: this.pos(row + 1, 0),
                 action: "remove",
-                lines: ["", ""]
+                lines: ["", ""],
+                reason
             });
         }
     }
@@ -552,7 +558,7 @@ class Document {
             delta.docLinesAfter = docLinesAfter;
             this._signal("change", delta);
 
-            // Delete doc lines to make sure no excessive memory consumption
+            // Delete doc lines to avoid excessive memory consumption
             delete delta.docLinesBefore;
             delete delta.docLinesAfter;
         }

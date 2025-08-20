@@ -507,12 +507,21 @@ TextInput= function(parentNode, host) {
     };
 
     var onPaste = function(e) {
-        var data = handleClipboardData(e);
+        const preProcessResult = host.preProcessClipboardOnPasting(e); // e - ClipboardEvent
+        console.log('preProcessResult', preProcessResult);
+
+        var data;
+        if (preProcessResult != null && preProcessResult.flatTextOverride != null) {
+            data = preProcessResult.flatTextOverride;
+        } else {
+            data = handleClipboardData(e);
+        }
+
         if (clipboard.pasteCancelled())
             return;
         if (typeof data == "string") {
             if (data)
-                host.onPaste(data, e);
+                host.onPaste(data, e, preProcessResult);
             if (useragent.isIE)
                 setTimeout(resetSelection);
             event.preventDefault(e);

@@ -1070,8 +1070,8 @@ class EditSession {
      * @param {String} text A chunk of text to insert
      * @returns {Point} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
      **/
-    insert(position, text) {
-        return this.doc.insert(position, text);
+    insert(position, text, reason) {
+        return this.doc.insert(position, text, reason);
     }
 
     /**
@@ -1079,8 +1079,8 @@ class EditSession {
      * @param {IRange} range A specified Range to remove
      * @returns {Point} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
      **/
-    remove(range) {
-        return this.doc.remove(range);
+    remove(range, reason) {
+        return this.doc.remove(range, reason);
     }
 
     /**

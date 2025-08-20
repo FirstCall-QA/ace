@@ -534,6 +534,11 @@ export namespace Ace {
         "changeSelectionStyle": (data: "fullLine" | "screenLine" | "text" | "line") => void;
     }
 
+    interface PreProcessClipboardOnPastingResult {
+        flatTextOverride?: string;
+        customFormats?: Record<string, string>;
+    }
+
     interface AcePopupEvents {
         "click": (e: MouseEvent) => void;
         "dblclick": (e: MouseEvent) => void;
@@ -667,6 +672,11 @@ export namespace Ace {
         docLinesBefore?: string[];
         docLinesAfter?: string[];
         undoOfDelta?: Delta;
+        reason?: DeltaReason;
+    }
+
+    interface DeltaReason {
+        pasted?: Record<string, unknown>;
     }
 
     interface Annotation {
@@ -884,6 +894,8 @@ export namespace Ace {
         $delegator(method: string, args: IArguments, defaultHandler): any;
 
         onGetCopyTextExtended?: (editor: Editor) => OnGetCopyTextExtendedResult | undefined;
+
+        onPreProcessClipboardOnPasting?: (editor: Editor, clipboardEvent: ClipboardEvent) => PreProcessClipboardOnPastingResult | undefined;
     }
 
     interface OnGetCopyTextExtendedResult {
@@ -1282,6 +1294,8 @@ declare module "./src/editor" {
         showSettingsMenu?: () => void,
         searchBox?: Ace.SearchBox,
         _eventRegistry?: any,
+        getCopyTextExtended?: () => Ace.OnGetCopyTextExtendedResult | undefined,
+        preProcessClipboardOnPasting?: (e: ClipboardEvent) => Ace.PreProcessClipboardOnPastingResult | undefined,
     }
 }
 

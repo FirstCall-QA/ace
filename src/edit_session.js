@@ -319,6 +319,20 @@ class EditSession {
     }
 
     /**
+     * Refreshes background tokenizer cache. `firstRow` and `lastRow` are used to define the boundaries of the region to be refreshed.
+     * @param {Number} firstRow The starting row region
+     * @param {Number} lastRow The final row region
+    **/
+    refreshTokenizerCache(firstRow, lastRow) {
+        for (let row = firstRow; row <= lastRow; row++) {
+            delete this.bgTokenizer.lines[row];
+            delete this.bgTokenizer.states[row];
+        }
+
+        this.bgTokenizer.fireUpdateEvent(firstRow, lastRow);
+    }
+
+    /**
      * Sets the undo manager.
      * @param {UndoManager} undoManager The new undo manager
      **/

@@ -499,6 +499,7 @@ export namespace Ace {
     }
 
     interface EditorEvents {
+        "preChange": (delta: Delta) => void;
         "change": (delta: Delta) => void;
         "changeSelection": () => void;
         "input": () => void;
@@ -1345,8 +1346,8 @@ declare module "./src/edit_session" {
         $occurMatchingLines?: any,
         $useEmacsStyleLineStart?: boolean,
         $selectLongWords?: boolean,
+        refreshTokenizerCache(firstRow: number, lastRow: number): void,
     }
-
 }
 
 declare module "./src/edit_session/fold" {

@@ -625,6 +625,7 @@ class Editor {
         var lastRow = (delta.start.row == delta.end.row ? delta.end.row : Infinity);
         this.renderer.updateLines(delta.start.row, lastRow, wrap);
 
+        this._signal("preChange", delta);
         this._signal("change", delta);
 
         // Update cursor because tab characters can influence the cursor position.

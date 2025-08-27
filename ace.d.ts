@@ -656,6 +656,7 @@ export namespace Ace {
     getScreenLength(): number;
     toJSON(): Object;
     destroy(): void;
+    refreshTokenizerCache(firstRow: number, lastRow: number): void,
   }
 
   export interface KeyBinding {
@@ -889,6 +890,7 @@ export namespace Ace {
 
     on(name: 'blur', callback: (e: Event) => void): void;
     on(name: 'input', callback: () => void): void;
+    on(name: 'preChange', callback: (delta: Delta) => void): void;
     on(name: 'change', callback: (delta: Delta) => void): void;
     on(name: 'changeSelectionStyle', callback: (obj: { data: string }) => void): void;
     on(name: 'changeSession',

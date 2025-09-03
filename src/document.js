@@ -540,9 +540,15 @@ class Document {
      **/
     applyDelta(delta, doNotValidate) {
         var isInsert = delta.action == "insert";
-        // An empty range is a NOOP.
-        if (isInsert ? delta.lines.length <= 1 && !delta.lines[0]
-            : !Range.comparePoints(delta.start, delta.end)) {
+        var isRemove = delta.action == "remove";
+
+        if (isInsert && delta.lines.length <= 1 && !delta.lines[0]) {
+            // An empty range is a NOOP.
+            return;
+        }
+
+        if (isRemove && !Range.comparePoints(delta.start, delta.end)) {
+            // An empty range is a NOOP.
             return;
         }
 

@@ -1126,6 +1126,11 @@ class EditSession {
                 this.doc.revertDelta(delta);
             } else if (delta.folds) {
                 this.addFolds(delta.folds);
+            } else {
+                const onUndoCustomDelta = this.getMode().onUndoCustomDelta;
+                if (onUndoCustomDelta != null) {
+                    onUndoCustomDelta(this, delta);
+                }
             }
         }
         if (!dontSelect && this.$undoSelect) {
@@ -1153,6 +1158,11 @@ class EditSession {
             var delta = deltas[i];
             if (delta.action == "insert" || delta.action == "remove") {
                 this.doc.$safeApplyDelta(delta);
+            } else {
+                const onRedoCustomDelta = this.getMode().onRedoCustomDelta;
+                if (onRedoCustomDelta != null) {
+                    onRedoCustomDelta(this, delta);
+                }
             }
         }
 

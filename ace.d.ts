@@ -456,6 +456,8 @@ export namespace Ace {
       prefix: string): Completion[];
     onGetCopyTextExtended?: (editor: Editor) => OnGetCopyTextExtendedResult | undefined;
     onPreProcessClipboardOnPasting?: (editor: Editor, clipboardEvent: ClipboardEvent) => PreProcessClipboardOnPastingResult | undefined;
+    onUndoCustomDelta?: (session: EditSession, delta: Delta) => void;
+    onRedoCustomDelta?: (session: EditSession, delta: Delta) => void;
   }
 
   export interface OnGetCopyTextExtendedResult {

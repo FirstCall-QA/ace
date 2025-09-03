@@ -508,7 +508,6 @@ TextInput= function(parentNode, host) {
 
     var onPaste = function(e) {
         const preProcessResult = host.preProcessClipboardOnPasting(e); // e - ClipboardEvent
-        console.log('preProcessResult', preProcessResult);
 
         var data;
         if (preProcessResult != null && preProcessResult.flatTextOverride != null) {

@@ -625,6 +625,7 @@ class Editor {
         var lastRow = (delta.start.row == delta.end.row ? delta.end.row : Infinity);
         this.renderer.updateLines(delta.start.row, lastRow, wrap);
 
+        this._signal("preChange", delta);
         this._signal("change", delta);
 
         // Update cursor because tab characters can influence the cursor position.
@@ -798,6 +799,23 @@ class Editor {
         return this.session.getTextRange(this.getSelectionRange());
     }
 
+    getCopyTextExtended () {
+        var mode = this.session.getMode();
+        var copyResult;
+        if (mode.onGetCopyTextExtended) {
+            copyResult = mode.onGetCopyTextExtended(this);
+        }
+
+        if (!copyResult) {
+            return;
+        }
+
+        var e = { text: copyResult.plainText };
+        this._signal("copy", e);
+        clipboard.lineMode = copyResult.copyLineMode ? e.text : false;
+
+        return copyResult;
+    }
 
     /**
      * Returns the string of text currently highlighted.
@@ -843,9 +861,16 @@ class Editor {
      * @param {String} text The pasted text
      * @param {any} event
      **/
-    onPaste(text, event) {
-        var e = {text: text, event: event};
+    onPaste(text, event, preProcessResult) {
+        var e = { text, event, preProcessResult };
         this.commands.exec("paste", this, e);
+    }
+
+    preProcessClipboardOnPasting(clipboardEvent) {
+        const onPreProcessClipboardOnPasting = this.session.getMode().onPreProcessClipboardOnPasting;
+        if (onPreProcessClipboardOnPasting != null) {
+            return onPreProcessClipboardOnPasting(this, clipboardEvent);
+        }
     }
 
     /**
@@ -854,21 +879,32 @@ class Editor {
      * @returns {boolean}
      */
     $handlePaste(e) {
-        if (typeof e == "string")
+        var preProcessResult;
+        if (typeof e == "string") {
             e = {text: e};
+        } else if (e != null) {
+            preProcessResult = e.preProcessResult;
+        }
+
         this._signal("paste", e);
         var text = e.text;
+        var deltaReason = {
+            pasted: {}
+        };
+        if (preProcessResult != null && preProcessResult.deltaReasonDetails != null) {
+            deltaReason.pasted = preProcessResult.deltaReasonDetails;
+        }
 
         var lineMode = text === clipboard.lineMode;
         var session = this.session;
         if (!this.inMultiSelectMode || this.inVirtualSelectionMode) {
             if (lineMode)
-                session.insert({ row: this.selection.lead.row, column: 0 }, text);
+                session.insert({ row: this.selection.lead.row, column: 0 }, text, deltaReason);
             else
-                this.insert(text);
+                this.insert(text, undefined, deltaReason);
         } else if (lineMode) {
             this.selection.rangeList.ranges.forEach(function(range) {
-                session.insert({ row: range.start.row, column: 0 }, text);
+                session.insert({ row: range.start.row, column: 0 }, text, deltaReason);
             });
         } else {
             var lines = text.split(/\r\n|\r|\n/);
@@ -902,8 +938,9 @@ class Editor {
      * Inserts `text` into wherever the cursor is pointing.
      * @param {String} text The new text to add
      * @param {boolean} [pasted]
+     * @param {Object} [deltaReason]
      **/
-    insert(text, pasted) {
+    insert(text, pasted, deltaReason) {
         var session = this.session;
         var mode = session.getMode();
         var cursor = this.getCursorPosition();
@@ -952,7 +989,7 @@ class Editor {
         var lineState = session.getState(cursor.row);
         var line = session.getLine(cursor.row);
         var shouldOutdent = mode.checkOutdent(lineState, line, text);
-        session.insert(cursor, text);
+        session.insert(cursor, text, deltaReason);
 
         if (transform && transform.selection) {
             if (transform.selection.length == 2) { // Transform relative to the current column

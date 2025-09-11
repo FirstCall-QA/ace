@@ -499,6 +499,7 @@ export namespace Ace {
     }
 
     interface EditorEvents {
+        "preChange": (delta: Delta) => void;
         "change": (delta: Delta) => void;
         "changeSelection": () => void;
         "input": () => void;
@@ -532,6 +533,11 @@ export namespace Ace {
          * @param data Contains one property, `data`, which indicates the new selection style
          **/
         "changeSelectionStyle": (data: "fullLine" | "screenLine" | "text" | "line") => void;
+    }
+
+    interface PreProcessClipboardOnPastingResult {
+        flatTextOverride?: string;
+        customFormats?: Record<string, string>;
     }
 
     interface AcePopupEvents {
@@ -664,6 +670,14 @@ export namespace Ace {
         lines: string[];
         id?: number,
         folds?: Fold[]
+        docLinesBefore?: string[];
+        docLinesAfter?: string[];
+        undoOfDelta?: Delta;
+        reason?: DeltaReason;
+    }
+
+    interface DeltaReason {
+        pasted?: Record<string, unknown>;
     }
 
     interface Annotation {
@@ -880,6 +894,24 @@ export namespace Ace {
 
         $delegator(method: string, args: IArguments, defaultHandler): any;
 
+        onGetCopyTextExtended?: (editor: Editor) => OnGetCopyTextExtendedResult | undefined;
+
+        onPreProcessClipboardOnPasting?: (editor: Editor, clipboardEvent: ClipboardEvent) => PreProcessClipboardOnPastingResult | undefined;
+
+        onUndoCustomDelta?: (session: EditSession, delta: Delta) => void;
+
+        onRedoCustomDelta?: (session: EditSession, delta: Delta) => void;
+    }
+
+    interface OnGetCopyTextExtendedResult {
+        plainText: string;
+        copyLineMode?: boolean;
+        extendedFormats?: ClipboardFormatData[];
+    }
+
+    interface ClipboardFormatData {
+        format: string;
+        data: string;
     }
 
     interface OptionsBase {
@@ -1267,6 +1299,8 @@ declare module "./src/editor" {
         showSettingsMenu?: () => void,
         searchBox?: Ace.SearchBox,
         _eventRegistry?: any,
+        getCopyTextExtended?: () => Ace.OnGetCopyTextExtendedResult | undefined,
+        preProcessClipboardOnPasting?: (e: ClipboardEvent) => Ace.PreProcessClipboardOnPastingResult | undefined,
     }
 }
 
@@ -1316,8 +1350,8 @@ declare module "./src/edit_session" {
         $occurMatchingLines?: any,
         $useEmacsStyleLineStart?: boolean,
         $selectLongWords?: boolean,
+        refreshTokenizerCache(firstRow: number, lastRow: number): void,
     }
-
 }
 
 declare module "./src/edit_session/fold" {

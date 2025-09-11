@@ -319,6 +319,20 @@ class EditSession {
     }
 
     /**
+     * Refreshes background tokenizer cache. `firstRow` and `lastRow` are used to define the boundaries of the region to be refreshed.
+     * @param {Number} firstRow The starting row region
+     * @param {Number} lastRow The final row region
+    **/
+    refreshTokenizerCache(firstRow, lastRow) {
+        for (let row = firstRow; row <= lastRow; row++) {
+            delete this.bgTokenizer.lines[row];
+            delete this.bgTokenizer.states[row];
+        }
+
+        this.bgTokenizer.fireUpdateEvent(firstRow, lastRow);
+    }
+
+    /**
      * Sets the undo manager.
      * @param {UndoManager} undoManager The new undo manager
      **/
@@ -1070,8 +1084,8 @@ class EditSession {
      * @param {String} text A chunk of text to insert
      * @returns {Point} The position of the last line of `text`. If the length of `text` is 0, this function simply returns `position`.
      **/
-    insert(position, text) {
-        return this.doc.insert(position, text);
+    insert(position, text, reason) {
+        return this.doc.insert(position, text, reason);
     }
 
     /**
@@ -1079,8 +1093,8 @@ class EditSession {
      * @param {IRange} range A specified Range to remove
      * @returns {Point} The new `start` property of the range, which contains `startRow` and `startColumn`. If `range` is empty, this function returns the unmodified value of `range.start`.
      **/
-    remove(range) {
-        return this.doc.remove(range);
+    remove(range, reason) {
+        return this.doc.remove(range, reason);
     }
 
     /**
@@ -1112,6 +1126,11 @@ class EditSession {
                 this.doc.revertDelta(delta);
             } else if (delta.folds) {
                 this.addFolds(delta.folds);
+            } else {
+                const onUndoCustomDelta = this.getMode().onUndoCustomDelta;
+                if (onUndoCustomDelta != null) {
+                    onUndoCustomDelta(this, delta);
+                }
             }
         }
         if (!dontSelect && this.$undoSelect) {
@@ -1139,6 +1158,11 @@ class EditSession {
             var delta = deltas[i];
             if (delta.action == "insert" || delta.action == "remove") {
                 this.doc.$safeApplyDelta(delta);
+            } else {
+                const onRedoCustomDelta = this.getMode().onRedoCustomDelta;
+                if (onRedoCustomDelta != null) {
+                    onRedoCustomDelta(this, delta);
+                }
             }
         }
 

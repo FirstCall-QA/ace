@@ -12,7 +12,7 @@ var HAS_FOCUS_ARGS = useragent.isChrome > 63;
 var MAX_LINE_LENGTH = 400;
 
 /**
- * 
+ *
  * @type {{[key: string]: any}}
  */
 var KEYS = require("../lib/keys");
@@ -41,13 +41,13 @@ TextInput= function(parentNode, host) {
     var inComposition = false;
     var sendingText = false;
     var tempStyle = '';
-    
+
     if (!isMobile)
         text.style.fontSize = "1px";
 
     var commandMode = false;
     var ignoreFocusEvents = false;
-    
+
     var lastValue = "";
     var lastSelectionStart = 0;
     var lastSelectionEnd = 0;
@@ -55,7 +55,7 @@ TextInput= function(parentNode, host) {
     var rowStart = Number.MAX_SAFE_INTEGER;
     var rowEnd = Number.MIN_SAFE_INTEGER;
     var numberOfExtraLines = 0;
-    
+
     // FOCUS
     // ie9 throws error if document.activeElement is accessed too soon
     try { var isFocused = document.activeElement === text; } catch(e) {}
@@ -70,7 +70,7 @@ TextInput= function(parentNode, host) {
             numberOfExtraLines = 0;
             return;
         }
-        
+
         numberOfExtraLines = number;
     };
     this.setAriaOptions = function(options) {
@@ -85,7 +85,7 @@ TextInput= function(parentNode, host) {
         }
         if (options.role) {
             text.setAttribute("role", options.role);
-        }     
+        }
         if (options.setLabel) {
             text.setAttribute("aria-roledescription", nls("editor"));
             if(host.session) {
@@ -95,7 +95,7 @@ TextInput= function(parentNode, host) {
         }
     };
 
-    this.setAriaOptions({role: "textbox"}); 
+    this.setAriaOptions({role: "textbox"});
 
     event.addListener(text, "blur", function(e) {
         if (ignoreFocusEvents) return;
@@ -119,7 +119,7 @@ TextInput= function(parentNode, host) {
             resetSelection();
     }, host);
     /**
-     * 
+     *
      * @type {boolean | string}
      */
     this.$focusScroll = false;
@@ -171,7 +171,7 @@ TextInput= function(parentNode, host) {
     this.isFocused = function() {
         return isFocused;
     };
-    
+
     host.on("beforeEndOperation", function() {
         var curOp = host.curOp;
         var commandName = curOp && curOp.command && curOp.command.name;
@@ -186,7 +186,7 @@ TextInput= function(parentNode, host) {
         // sync value of textarea
         resetSelection();
     });
-    
+
     // Convert from row,column position to the linear position with respect to the current
     // block of lines in the textarea.
     var positionToSelection = function(row, column) {
@@ -201,12 +201,12 @@ TextInput= function(parentNode, host) {
     var resetSelection = isIOS
     ? function(value) {
         if (!isFocused || (copied && !value) || sendingText) return;
-        if (!value) 
+        if (!value)
             value = "";
         var newValue = "\n ab" + value + "cde fg\n";
         if (newValue != text.value)
             text.value = lastValue = newValue;
-        
+
         var selectionStart = 4;
         var selectionEnd = 4 + (value.length || (host.selection.isEmpty() ? 0 : 1));
 
@@ -223,9 +223,9 @@ TextInput= function(parentNode, host) {
         if (!isFocused && !afterContextMenu)
             return;
         // see https://github.com/ajaxorg/ace/issues/2114
-        // @ts-expect-error this prevents infinite recursion on safari 8 
+        // @ts-expect-error this prevents infinite recursion on safari 8
         inComposition = true;
-        
+
         var selectionStart = 0;
         var selectionEnd = 0;
         var line = "";
@@ -238,7 +238,7 @@ TextInput= function(parentNode, host) {
             // We keep 2*numberOfExtraLines + 1 lines in the textarea, if the new active row
             // is within the current block of lines in the textarea we do nothing. If the new row
             // is one row above or below the current block, move up or down to the next block of lines.
-            // If the new row is further than 1 row away from the current block grab a new block centered 
+            // If the new row is further than 1 row away from the current block grab a new block centered
             // around the new row.
             if (row === rowEnd + 1) {
                 rowStart = rowEnd + 1;
@@ -250,18 +250,18 @@ TextInput= function(parentNode, host) {
                 rowStart = row > numberOfExtraLines ? row - numberOfExtraLines : 0;
                 rowEnd = row > numberOfExtraLines ? row + numberOfExtraLines : 2*numberOfExtraLines;
             }
-            
+
             var lines = [];
 
             for (var i = rowStart; i <= rowEnd; i++) {
                 lines.push(host.session.getLine(i));
             }
-            
+
             line = lines.join('\n');
 
             selectionStart = positionToSelection(range.start.row, range.start.column);
             selectionEnd = positionToSelection(range.end.row, range.end.column);
-            
+
             if (range.start.row < rowStart) {
                 var prevLine = host.session.getLine(rowStart - 1);
                 selectionStart = range.start.row < rowStart - 1 ? 0 : selectionStart;
@@ -294,14 +294,14 @@ TextInput= function(parentNode, host) {
                     }
                 }
             }
-        
+
             var newValue = line + "\n\n";
             if (newValue != lastValue) {
                 text.value = lastValue = newValue;
                 lastSelectionStart = lastSelectionEnd = newValue.length;
             }
         }
-        
+
         // contextmenu on mac may change the selection
         if (afterContextMenu) {
             lastSelectionStart = text.selectionStart;
@@ -309,8 +309,8 @@ TextInput= function(parentNode, host) {
         }
         // on firefox this throws if textarea is hidden
         if (
-            lastSelectionEnd != selectionEnd 
-            || lastSelectionStart != selectionStart 
+            lastSelectionEnd != selectionEnd
+            || lastSelectionStart != selectionStart
             || text.selectionEnd != lastSelectionEnd // on ie edge selectionEnd changes silently after the initialization
         ) {
             try {
@@ -351,7 +351,7 @@ TextInput= function(parentNode, host) {
     this.setInputHandler = function(cb) {inputHandler = cb;};
     this.getInputHandler = function() {return inputHandler;};
     var afterContextMenu = false;
-    
+
     var sendText = function(value, fromInput) {
         if (afterContextMenu)
             afterContextMenu = false;
@@ -364,14 +364,14 @@ TextInput= function(parentNode, host) {
         } else {
             var selectionStart = text.selectionStart;
             var selectionEnd = text.selectionEnd;
-        
+
             var extendLeft = lastSelectionStart;
             var extendRight = lastValue.length - lastSelectionEnd;
-            
+
             var inserted = value;
             var restoreStart = value.length - selectionStart;
             var restoreEnd = value.length - selectionEnd;
-        
+
             var i = 0;
             while (extendLeft > 0 && lastValue[i] == value[i]) {
                 i++;
@@ -389,21 +389,21 @@ TextInput= function(parentNode, host) {
             if (endIndex < 0) {
                 extendLeft = -endIndex;
                 endIndex = 0;
-            } 
+            }
             inserted = inserted.slice(0, endIndex);
-            
+
             // composition update can be called without any change
             if (!fromInput && !inserted && !restoreStart && !extendLeft && !extendRight && !restoreEnd)
                 return "";
             sendingText = true;
-            
+
             // some android keyboards converts two spaces into sentence end, which is not useful for code
             var shouldReset = false;
             if (useragent.isAndroid && inserted == ". ") {
                 inserted = "  ";
                 shouldReset = true;
             }
-            
+
             if (inserted && !extendLeft && !extendRight && !restoreStart && !restoreEnd || commandMode) {
                 host.onTextInput(inserted);
             } else {
@@ -415,7 +415,7 @@ TextInput= function(parentNode, host) {
                 });
             }
             sendingText = false;
-            
+
             lastValue = value;
             lastSelectionStart = selectionStart;
             lastSelectionEnd = selectionEnd;
@@ -433,24 +433,28 @@ TextInput= function(parentNode, host) {
         var data = text.value;
         var inserted = sendText(data, true);
         if (
-            data.length > MAX_LINE_LENGTH + 100 
+            data.length > MAX_LINE_LENGTH + 100
             || valueResetRegex.test(inserted)
             || isMobile && lastSelectionStart < 1 && lastSelectionStart == lastSelectionEnd
         ) {
             resetSelection();
         }
     };
-    
+
     var handleClipboardData = function(e, data, forceIEMime) {
+        var textData = !data ? null : typeof data == "string" || data instanceof String ? data : data.plainText;
         var clipboardData = e.clipboardData || window["clipboardData"];
         if (!clipboardData || BROKEN_SETDATA)
             return;
         // using "Text" doesn't work on old webkit but ie needs it
         var mime = USE_IE_MIME_TYPE || forceIEMime ? "Text" : "text/plain";
         try {
-            if (data) {
+            if (textData) {
+                if (Array.isArray(data.extendedFormats)) {
+                    data.extendedFormats.forEach(x => clipboardData.setData(x.format, x.data));
+                }
                 // Safari 5 has clipboardData object, but does not handle setData()
-                return clipboardData.setData(mime, data) !== false;
+                return clipboardData.setData(mime, textData) !== false;
             } else {
                 return clipboardData.getData(mime);
             }
@@ -461,11 +465,18 @@ TextInput= function(parentNode, host) {
     };
 
     var doCopy = function(e, isCut) {
-        var data = host.getCopyText();
+        var dataEx = host.getCopyTextExtended ? host.getCopyTextExtended() : undefined;
+        var data;
+        if (dataEx) {
+            data = dataEx.plainText;
+        } else {
+            data = host.getCopyText();
+        }
+
         if (!data)
             return event.preventDefault(e);
 
-        if (handleClipboardData(e, data)) {
+        if (handleClipboardData(e, dataEx == null ? data : dataEx)) {
             if (isIOS) {
                 resetSelection(data);
                 copied = data;
@@ -486,22 +497,30 @@ TextInput= function(parentNode, host) {
             });
         }
     };
-    
+
     var onCut = function(e) {
         doCopy(e, true);
     };
-    
+
     var onCopy = function(e) {
         doCopy(e, false);
     };
-    
+
     var onPaste = function(e) {
-        var data = handleClipboardData(e);
+        const preProcessResult = host.preProcessClipboardOnPasting(e); // e - ClipboardEvent
+
+        var data;
+        if (preProcessResult != null && preProcessResult.flatTextOverride != null) {
+            data = preProcessResult.flatTextOverride;
+        } else {
+            data = handleClipboardData(e);
+        }
+
         if (clipboard.pasteCancelled())
             return;
         if (typeof data == "string") {
             if (data)
-                host.onPaste(data, e);
+                host.onPaste(data, e, preProcessResult);
             if (useragent.isIE)
                 setTimeout(resetSelection);
             event.preventDefault(e);
@@ -545,28 +564,28 @@ TextInput= function(parentNode, host) {
 
     // COMPOSITION
     var onCompositionStart = function(e) {
-        if (inComposition || !host.onCompositionStart || host.$readOnly) 
+        if (inComposition || !host.onCompositionStart || host.$readOnly)
             return;
-        
+
         inComposition = {};
 
         if (commandMode)
             return;
-        
+
         if (e.data)
             inComposition.useTextareaForIME = false;
-        
+
         setTimeout(onCompositionUpdate, 0);
         host._signal("compositionStart");
         host.on("mousedown", cancelComposition);
-        
+
         var range = host.getSelectionRange();
         range.end.row = range.start.row;
         range.end.column = range.start.column;
         inComposition.markerRange = range;
         inComposition.selectionStart = lastSelectionStart;
         host.onCompositionStart(inComposition);
-        
+
         if (inComposition.useTextareaForIME) {
             lastValue = text.value = "";
             lastSelectionStart = 0;
@@ -585,7 +604,7 @@ TextInput= function(parentNode, host) {
             return;
         if (commandMode)
             return cancelComposition();
-        
+
         if (inComposition.useTextareaForIME) {
             host.onCompositionUpdate(text.value);
         }
@@ -612,7 +631,7 @@ TextInput= function(parentNode, host) {
         // because textarea value can be silently restored
         if (e) onInput();
     };
-    
+
 
     function cancelComposition() {
         // force end composition
@@ -623,7 +642,7 @@ TextInput= function(parentNode, host) {
     }
 
     var syncComposition = lang.delayedCall(onCompositionUpdate, 50).schedule.bind(null, null);
-    
+
     function onKeyup(e) {
         // workaround for a bug in ie where pressing esc silently moves selection out of textarea
         if (e.keyCode == 27 && text.value.length < text.selectionStart) {
@@ -644,14 +663,14 @@ TextInput= function(parentNode, host) {
     this.getElement = function() {
         return text;
     };
-    
+
     // allows to ignore composition (used by vim keyboard handler in the normal mode)
     // this is useful on mac, where with some keyboard layouts (e.g swedish) ^ starts composition
     this.setCommandMode = function(value) {
         commandMode = value;
         text.readOnly = false;
     };
-    
+
     this.setReadOnly = function(readOnly) {
         if (!commandMode)
             text.readOnly = readOnly;
@@ -666,7 +685,7 @@ TextInput= function(parentNode, host) {
         host._emit("nativecontextmenu", {target: host, domEvent: e});
         this.moveToMouse(e, true);
     };
-    
+
     this.moveToMouse = function(e, bringToFront) {
         if (!tempStyle)
             tempStyle = text.style.cssText;
@@ -681,7 +700,7 @@ TextInput= function(parentNode, host) {
         var maxTop = rect.bottom - top - text.clientHeight -2;
         var move = function(e) {
             dom.translate(text, e.clientX - left - 2, Math.min(e.clientY - top - 2, maxTop));
-        }; 
+        };
         move(e);
 
         if (e.type != "mousedown")
@@ -721,7 +740,7 @@ TextInput= function(parentNode, host) {
     }, host);
     event.addListener(host.renderer.scroller, "contextmenu", onContextMenu, host);
     event.addListener(text, "contextmenu", onContextMenu, host);
-    
+
     if (isIOS)
         addIosSelectionHandler(parentNode, host, text);
 
@@ -739,7 +758,7 @@ TextInput= function(parentNode, host) {
                 typing = false;
             }, 100);
         }, true);
-    
+
         // IOS doesn't fire events for arrow keys, but this unique hack changes everything!
         var detectArrowKeys = function(e) {
             if (document.activeElement !== text) return;
@@ -750,7 +769,7 @@ TextInput= function(parentNode, host) {
             }
             var selectionStart = text.selectionStart;
             var selectionEnd = text.selectionEnd;
-            
+
             var key = null;
             var modifier = 0;
             // console.log(selectionStart, selectionEnd);
@@ -766,7 +785,7 @@ TextInput= function(parentNode, host) {
             } else if (
                 selectionStart < lastSelectionStart
                 || (
-                    selectionStart == lastSelectionStart 
+                    selectionStart == lastSelectionStart
                     && lastSelectionEnd != lastSelectionStart
                     && selectionStart == selectionEnd
                 )
@@ -780,14 +799,14 @@ TextInput= function(parentNode, host) {
             } else if (
                 selectionEnd > lastSelectionEnd
                 || (
-                    selectionEnd == lastSelectionEnd 
+                    selectionEnd == lastSelectionEnd
                     && lastSelectionEnd != lastSelectionStart
                     && selectionStart == selectionEnd
                 )
             ) {
                 key = KEYS.right;
             }
-            
+
             if (selectionStart !== selectionEnd)
                 modifier |= MODS.shift;
 
